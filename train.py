@@ -34,8 +34,6 @@ def plot():
     # show the plot
     plt.show()
 
-plot()
-
 # # flatten 28*28 images to a 784 vector for each image
 # num_pixels = X_train.shape[1] * X_train.shape[2]
 # X_train = X_train.reshape(X_train.shape[0], num_pixels).astype('float32')
@@ -93,31 +91,17 @@ def larger_conv_model():
 	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 	return model
 
-# n = 5
-# for i in range(1, n + 1):
-    # # build the model
-    # model = larger_conv_model()
-    # # tensorboard for logging
-    # tensorboard = TensorBoard(log_dir="tensorboard/larger_conv_{}".format(i))
-    # X_train_sub = X_train[:int(i * (len(X_train) / n))]
-    # y_train_sub = y_train[:int(i * (len(y_train) / n))]
-    # print("training set size: {}".format(len(X_train_sub)))
-    # # Fit the model
-    # model.fit(X_train_sub, y_train_sub, validation_data=(X_test, y_test), epochs=10, batch_size=200, verbose=2, callbacks=[tensorboard])
-    # # Final evaluation of the model
-    # scores = model.evaluate(X_test, y_test, verbose=0)
-    # print("Baseline Error: {}".format(100-scores[1]*100))
-
 # build the model
-model = multilayer_perceptron_model()
-num_samples = 100
+model = larger_conv_model()
+num_samples = len(X_train)
 # tensorboard for logging
-tensorboard = TensorBoard(log_dir="tensorboard/num_samples_multilayer_perceptron_{}".format(num_samples))
+tensorboard = TensorBoard(log_dir='tensorboard/recognizer_{}'.format(num_samples))
 X_train_sub = X_train[:num_samples]
 y_train_sub = y_train[:num_samples]
-print("training set size: {}".format(num_samples))
+print('training set size: {}'.format(num_samples))
 # Fit the model
-model.fit(X_train_sub, y_train_sub, validation_data=(X_test, y_test), epochs=10, batch_size=200, verbose=2, callbacks=[tensorboard])
+model.fit(X_train_sub, y_train_sub, validation_data=(X_test, y_test), epochs=20, batch_size=128, verbose=2, callbacks=[tensorboard])
 # Final evaluation of the model
 scores = model.evaluate(X_test, y_test, verbose=0)
-print("Baseline Error: {}".format(100-scores[1]*100))
+print('Baseline Error: {}'.format(100-scores[1]*100))
+model.save('recognizer.h5')
