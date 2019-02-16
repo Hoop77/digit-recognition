@@ -13,23 +13,25 @@ from keras import backend as K
 K.set_image_dim_ordering('th')
 
 # fix random seed for reproducibility
-seed = 7
+seed = 3
 np.random.seed(seed)
+
+epochs = 10
+batch_size = 128
 
 # load data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
 def plot():
-    n = 4
-    # plot 4 images as gray scale
-    plt.subplot(221)
-    plt.imshow(X_train[0 + n], cmap=plt.get_cmap('gray'))
-    plt.subplot(222)
-    plt.imshow(X_train[1 + n], cmap=plt.get_cmap('gray'))
-    plt.subplot(223)
-    plt.imshow(X_train[2 + n], cmap=plt.get_cmap('gray'))
-    plt.subplot(224)
-    plt.imshow(X_train[3 + n], cmap=plt.get_cmap('gray'))
+    rows = 3
+    cols = 3
+    n = rows * cols
+    offset = 2 * n
+    fig, axes = plt.subplots(rows, cols)
+    for i in range(n):
+        r = int(i / cols)
+        c = int(i % cols)
+        axes[r][c].imshow(X_train[i + offset], cmap=plt.get_cmap('gray'))
 
     # show the plot
     plt.show()
@@ -100,7 +102,7 @@ X_train_sub = X_train[:num_samples]
 y_train_sub = y_train[:num_samples]
 print('training set size: {}'.format(num_samples))
 # Fit the model
-model.fit(X_train_sub, y_train_sub, validation_data=(X_test, y_test), epochs=20, batch_size=128, verbose=2, callbacks=[tensorboard])
+model.fit(X_train_sub, y_train_sub, validation_data=(X_test, y_test), epochs=epochs, batch_size=batch_size, verbose=2, callbacks=[tensorboard])
 # Final evaluation of the model
 scores = model.evaluate(X_test, y_test, verbose=0)
 print('Baseline Error: {}'.format(100-scores[1]*100))

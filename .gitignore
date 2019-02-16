@@ -2,3 +2,4 @@
 tensorboard
 vae_mlp
 *.h5
+tmp

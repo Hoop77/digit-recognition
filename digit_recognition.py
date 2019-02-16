@@ -38,8 +38,7 @@ for i, c in enumerate(contours):
     fig = threshed_img[y:y+h, x:x+w]
     fig = cv2.resize(fig, (24, 24))
     fig = cv2.copyMakeBorder(fig, 2, 2, 2, 2, cv2.BORDER_CONSTANT)
-    #fig = cv2.rotate(fig, cv2.ROTATE_90_CLOCKWISE)
-    cv2.imwrite("contours/{}.png".format(i), fig)
+    cv2.imwrite("tmp/{}.png".format(i), fig)
     fig = fig.reshape(1, 1, fig.shape[0], fig.shape[0])
     prediction = recognizer.predict(fig)[0]
     num = np.argmax(prediction)
