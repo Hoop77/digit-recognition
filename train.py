@@ -12,6 +12,7 @@ from time import time
 from keras import backend as K
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import uniform, randint
+import utils
 from keras.wrappers.scikit_learn import KerasClassifier
 K.set_image_dim_ordering('th')
 
@@ -23,29 +24,11 @@ epochs = 10
 batch_size = 128
 n_iters = 10
 
-# load data
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
+X_train, y_train, X_test, y_test = utils.load_mnist_data()
 
-num_samples = len(X_train)
+num_samples = 60000
 X_train = X_train[:num_samples]
 y_train = y_train[:num_samples]
-
-# # flatten 28*28 images to a 784 vector for each image
-# num_pixels = X_train.shape[1] * X_train.shape[2]
-# X_train = X_train.reshape(X_train.shape[0], num_pixels).astype('float32')
-# X_test = X_test.reshape(X_test.shape[0], num_pixels).astype('float32')
-
-# reshape to be [samples][pixels][width][height]
-X_train = X_train.reshape(X_train.shape[0], 1, 28, 28).astype('float32')
-X_test = X_test.reshape(X_test.shape[0], 1, 28, 28).astype('float32')
-
-# normalize inputs from 0-255 to 0-1
-X_train = X_train / 255
-X_test = X_test / 255
-
-# one hot encode outputs
-y_train = np_utils.to_categorical(y_train)
-y_test = np_utils.to_categorical(y_test)
 num_classes = y_test.shape[1]
 
 params = {
@@ -56,20 +39,6 @@ params = {
 	'dropout': uniform(0.0, 1.0),
 	'num_neurons': randint(20, 200)
 }
-
-def plot():
-    rows = 3
-    cols = 3
-    n = rows * cols
-    offset = 2 * n
-    fig, axes = plt.subplots(rows, cols)
-    for i in range(n):
-        r = int(i / cols)
-        c = int(i % cols)
-        axes[r][c].imshow(X_train[i + offset], cmap=plt.get_cmap('gray'))
-
-    # show the plot
-    plt.show()
 
 # define baseline model
 def multilayer_perceptron_model():

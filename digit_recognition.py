@@ -22,6 +22,7 @@ ret, threshed_img = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY),
 # find contours and get the external one
 contours, hierarchy = cv2.findContours(threshed_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+accepted = 0
 # with each contour, draw boundingRect in green
 # a minAreaRect in red and
 # a minEnclosingCircle in blue
@@ -36,9 +37,9 @@ for i, c in enumerate(contours):
     # draw a green rectangle to visualize the bounding rect
     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
     fig = threshed_img[y:y+h, x:x+w]
-    fig = cv2.resize(fig, (24, 24))
-    fig = cv2.copyMakeBorder(fig, 2, 2, 2, 2, cv2.BORDER_CONSTANT)
-    cv2.imwrite("tmp/{}.png".format(i), fig)
+    fig = cv2.resize(fig, (20, 20))
+    fig = cv2.copyMakeBorder(fig, 4, 4, 4, 4, cv2.BORDER_CONSTANT)
+    cv2.imwrite("tmp/{}.png".format(accepted), fig)
     fig = fig.reshape(1, 1, fig.shape[0], fig.shape[0])
     prediction = recognizer.predict(fig)[0]
     num = np.argmax(prediction)
@@ -51,6 +52,7 @@ for i, c in enumerate(contours):
     box = np.int0(box)
     # draw a red 'nghien' rectangle
     cv2.drawContours(img, [box], 0, (0, 0, 255))
+    accepted += 1
 
 cv2.drawContours(img, contours, -1, (255, 255, 0), 1)
 
