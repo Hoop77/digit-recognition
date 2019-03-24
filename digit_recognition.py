@@ -11,16 +11,19 @@ MIN_HEIGHT = 30
 # read and scale down image
 # wget https://bigsnarf.files.wordpress.com/2017/05/hammer.png
 orig = cv2.pyrDown(cv2.imread('img/1.jpg'))
+img = orig.copy()
 
-k = 5
-img = cv2.GaussianBlur(orig, (k, k), 0, 0)
+def threshold(img):
+    return cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 120, 255, cv2.THRESH_BINARY_INV)
 
-# threshold image
-ret, threshed_img = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY),
-                110, 255, cv2.THRESH_BINARY_INV)
+# keep a copy of the threshold img (without blur)
+_, threshed = threshold(orig)
 
+k = 3
+blurred = cv2.GaussianBlur(orig, (k, k), 0, 0)
+_, blurred_threshed = threshold(blurred)
 # find contours and get the external one
-contours, hierarchy = cv2.findContours(threshed_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 accepted = 0
 # with each contour, draw boundingRect in green
@@ -36,7 +39,7 @@ for i, c in enumerate(contours):
         continue
     # draw a green rectangle to visualize the bounding rect
     cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    fig = threshed_img[y:y+h, x:x+w]
+    fig = threshed[y:y+h, x:x+w]
     fig = cv2.resize(fig, (20, 20))
     fig = cv2.copyMakeBorder(fig, 4, 4, 4, 4, cv2.BORDER_CONSTANT)
     cv2.imwrite("tmp/{}.png".format(accepted), fig)

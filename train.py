@@ -20,50 +20,15 @@ K.set_image_dim_ordering('th')
 seed = 3
 np.random.seed(seed)
 
-epochs = 10
+epochs = 5
 batch_size = 128
 n_iters = 10
 
-X_train, y_train, X_test, y_test = utils.load_mnist_data()
-
-num_samples = 60000
-X_train = X_train[:num_samples]
-y_train = y_train[:num_samples]
+X_train, y_train, X_test, y_test = utils.load_combined_data()
+num_samples = len(X_train)
 num_classes = y_test.shape[1]
 
-params = {
-	'num_filters_0': [12, 24, 36, 48],
-	'filter_size_0': [3, 5, 7],
-	'num_filters_1': [12, 24, 36, 48],
-	'filter_size_1': [3, 5, 7],
-	'dropout': uniform(0.0, 1.0),
-	'num_neurons': randint(20, 200)
-}
-
-# define baseline model
-def multilayer_perceptron_model():
-	# create model
-	model = Sequential()
-	model.add(Dense(num_pixels, input_dim=num_pixels, kernel_initializer='normal', activation='relu'))
-	model.add(Dense(num_classes, kernel_initializer='normal', activation='softmax'))
-	# Compile model
-	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-	return model
-
-def simple_conv_model():
-	# create model
-	model = Sequential()
-	model.add(Conv2D(32, (5, 5), input_shape=(1, 28, 28), activation='relu'))
-	model.add(MaxPooling2D(pool_size=(2, 2)))
-	model.add(Dropout(0.2))
-	model.add(Flatten())
-	model.add(Dense(128, activation='relu'))
-	model.add(Dense(num_classes, activation='softmax'))
-	# Compile model
-	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-	return model
-
-def larger_conv_model(num_filters_0, filter_size_0, num_filters_1, filter_size_1, dropout, num_neurons):
+def build_model(num_filters_0, filter_size_0, num_filters_1, filter_size_1, dropout, num_neurons):
 	# create model
 	inputs = Input(shape=(1, 28, 28))
 	x = BatchNormalization(axis=3)(inputs)
@@ -81,7 +46,15 @@ def larger_conv_model(num_filters_0, filter_size_0, num_filters_1, filter_size_1
 	return model
 
 def search():
-	model = KerasClassifier(build_fn=larger_conv_model, epochs=epochs, batch_size=batch_size)
+	params = {
+		'num_filters_0': [12, 24, 36, 48],
+		'filter_size_0': [3, 5, 7],
+		'num_filters_1': [12, 24, 36, 48],
+		'filter_size_1': [3, 5, 7],
+		'dropout': uniform(0.0, 1.0),
+		'num_neurons': randint(20, 200)
+	}
+	model = KerasClassifier(build_fn=build_model, epochs=epochs, batch_size=batch_size)
 	random_search = RandomizedSearchCV(estimator=model,
 									   param_distributions=params,
 									   n_iter=n_iters,
@@ -96,8 +69,10 @@ def search():
 		print("%f (%f) with: %r" % (mean, stdev, param))
 
 def train():
-	params = {'dropout': 0.3253061838659205, 'filter_size_0': 5, 'filter_size_1': 7, 'num_filters_0': 12, 'num_filters_1': 48, 'num_neurons': 185}
-	model = larger_conv_model(**params)
+	#params = {'dropout': 0.3253061838659205, 'filter_size_0': 5, 'filter_size_1': 7, 'num_filters_0': 12, 'num_filters_1': 48, 'num_neurons': 185}
+	#params = {'dropout': 0.24249739821721294, 'filter_size_0': 7, 'filter_size_1': 5, 'num_filters_0': 48, 'num_filters_1': 12, 'num_neurons': 198}
+	params = {'dropout': 0.1, 'filter_size_0': 5, 'filter_size_1': 5, 'num_filters_0': 24, 'num_filters_1': 36, 'num_neurons': 400}
+	model = build_model(**params)
 	# tensorboard for logging
 	tensorboard = TensorBoard(log_dir='tensorboard/recognizer_{}'.format(num_samples))
 	# Fit the model

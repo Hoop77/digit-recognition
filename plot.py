@@ -4,24 +4,29 @@ from keras.models import load_model
 import numpy as np
 import cv2
 
-X_train, y_train, X_test, y_test = utils.load_mnist_data()
+seed = 3
+np.random.seed(seed)
+
+#X_train, y_train, X_test, y_test = utils.load_mnist_data()
+X_train, y_train, X_test, y_test = utils.load_combined_data()
 recognizer = load_model('recognizer.h5')
 
-selected_digit = 6
+selected_digit = 1
 
 X_sub = []
-for i, X in enumerate(X_test):
-    y = y_test[i]
+for i, X in enumerate(X_train):
+    y = y_train[i]
     digit = np.argmax(y)
     if digit == selected_digit:
         X_sub.append(X)
 X_sub = np.array(X_sub)
+print(len(X_sub))
 
-def plot_mnist():
-    rows = 5
-    cols = 5
+def plot_dataset():
+    rows = 3
+    cols = 3
     n = rows * cols
-    offset = 2 * n
+    offset = 8500
     fig, axes = plt.subplots(rows, cols)
     for i in range(n):
         X = X_sub[i + offset].reshape(1, 1, 28, 28)
@@ -55,4 +60,13 @@ def plot_handwritten():
     # show the plot
     plt.show()
 
-plot_mnist()
+def augumentation():
+    fig, axes = plt.subplots(2)
+    orig = cv2.imread('./datasets/1/0.png', cv2.IMREAD_GRAYSCALE)
+    img = orig.copy()
+    img = utils.rotate(img, 20)
+    axes[0].imshow(orig, cmap=plt.get_cmap('gray'))
+    axes[1].imshow(img, cmap=plt.get_cmap('gray'))
+    plt.show()
+
+plot_dataset()
